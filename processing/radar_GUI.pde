@@ -1,76 +1,94 @@
-import processing.serial.*; // imports library for serial communication
-import java.awt.event.KeyEvent; // imports library for reading the data from the serial port
+/*************** IMPORTS *************/
+/*************************************/
+
+/* Importiert das Serial Interface Modul */
+import processing.serial.*;
+/* Importiert das Interrupt Module */
+import java.awt.event.KeyEvent;
+/* Importiert das IO Module */
 import java.io.IOException;
+/* Importiert das Sound Module */
 import processing.sound.*;
 
-//WhiteNoise noise;
-BrownNoise noise;
+/*************************************/
+/*************** KLASSEN *************/
 
+/*erzeugt eine BrownNoise Klasse */
+BrownNoise noise;
+/* Erzeugt eine Serielle Klasse */
 Serial port;
-// defubes variables
-String angle="";
-String distance="";
-String data="";
+
+/*************************************/
+/************ VARIABLEN **************/
+
+String angle=""; // winkel Sensor
+String distance=""; // distanz zum Objekt
+String data=""; // data strem
 String noObject;
 float pixsDistance;
 int iAngle, iDistance;
-int index1=0;
-int index2=0;
+int index=0;
 PFont orcFont;
 
-void setup() 
+/*************************************/
+/************ FUNKTIONEN *************/
+
+/* Initialisierungs Funktion */
+void setup()
 {
- size (1536, 864);
+ size (1536, 864); // Fenster Grösse in pixel
  smooth();
- port = new Serial(this,Serial.list()[0], 9600); // starts the serial communication
- port.bufferUntil('.'); // reads the data from the serial port up to the character '.'. So actually it reads this: angle,distance.
- //noise = new WhiteNoise(this);
- noise = new BrownNoise(this);
+ port = new Serial(this,Serial.list()[0], 9600); // startet die serielle Kommunikation
+ /* // liest die Daten von der seriellen Schnittstelle bis zu dem Zeichen ",". Also Winkel.Abstand  */
+ port.bufferUntil('.');
+ noise = new BrownNoise(this); // init Sound
 }
-void draw() 
+
+/* Main Funktion */
+void draw()
 {  
   fill(98,245,31);
-  // simulating motion blur and slow fade of the moving line
+  /* Simulation von Bewegungsunschärfe und langsamer Überblendung der sich bewegenden Linie */
   noStroke();
   fill(0,4); 
   rect(0, 0, width, height-height*0.065);
   
-  fill(98,245,31); // green color
-  // calls the functions for drawing the radar
-  drawRadar(); 
-  //drawLine();
-  drawObject();
-  drawText();
-  drawPoint();
+  fill(98,245,31); // Grüne Farbe
+  drawRadar(); // Zeichnet Hintergrung
+  drawLine(); // Zeichnet die Linie 
+  drawText(); // Schreibt alle Texte
+  drawPoint(); // Setzt den Punkt bei distanz < 40 cm
 }
+
 void serialEvent (Serial port)
-{ // starts reading data from the Serial Port
-  // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data".
+{
+  // Liest die Daten von der seriellen Schnittstelle bis zum Zeichen "." und setzt sie in die String-Variable "data".
   data = port.readStringUntil('.');
-  data = data.substring(0,data.length()-1); // del '.'
+  data = data.substring(0,data.length()-1); // Löscht den "."
   
-  index1 = data.indexOf(","); // find the character ',' and puts it into the variable "index1"
-  angle = data.substring(0, index1); // read the data from position "0" to position of the variable index1 or thats the value of the angle the Arduino Board sent into the Serial Port
-  distance = data.substring(index1+1, data.length()); // read the data from position "index1" to the end of the data pr thats the value of the distance
+  index1 = data.indexOf(","); // findet das Zeichen "," und setzt es in die Variable "index1" ein
+  angle = data.substring(0, index); // Den Winkel abspeichern
+  distance = data.substring(index+1, data.length()); // Die Distanz absperichern
   
-  // converts the String variables into Integer
+  // konvertiert die String-Variablen in Integer
   iAngle = int(angle);
   iDistance = int(distance);
 }
-void drawRadar() 
+void drawRadar()
 {
   pushMatrix();
-  translate(width/2,height-height*0.074); // moves the starting coordinats to new location
+  translate(width/2,height-height*0.074); // verschiebt die Startkoordinaten an einen neuen Ort
   noFill();
   strokeWeight(1);
   stroke(98,245,31);
-  // draws the arc lines
+
+  // zeichnet die Bogenlinien
   arc(0,0,(width-width*0.0625),(width-width*0.0625),PI,TWO_PI);
   arc(0,0,(width-width*0.27),(width-width*0.27),PI,TWO_PI);
   arc(0,0,(width-width*0.479),(width-width*0.479),PI,TWO_PI);
   arc(0,0,(width-width*0.687),(width-width*0.687),PI,TWO_PI);
-  // draws the angle lines
-  
+
+  // zeichnet die Winkellinien
   line(-width/2,0,width/2,0);
   line(0,0,(-width/2)*cos(radians(15)),(-width/2)*sin(radians(15)));
   line(0,0,(-width/2)*cos(radians(30)),(-width/2)*sin(radians(30)));
@@ -85,26 +103,27 @@ void drawRadar()
   line((-width/2)*cos(radians(30)),0,width/2,0);
   popMatrix();
 }
-void drawObject() 
+
+void drawLine()
 {
   pushMatrix();
-  translate(width/2,height-height*0.074); // moves the starting coordinats to new location
+  translate(width/2,height-height*0.074); // verschiebt die Startkoordinaten an einen neuen Ort
   strokeWeight(7);
-  //stroke(255,10,10); // red color
-  stroke(30,250,60); // gree colur
-  pixsDistance = iDistance*((height-height*0.1666)*0.025); // covers the distance from the sensor from cm to pixels
-  // limiting the range to 40 cm
+  stroke(30,250,60); // Grüne Farbe
+  /* wandelt den Abstand vom Sensor zum Objekt in cm zu Pixel */
+  pixsDistance = iDistance*((height-height*0.1666)*0.025); 
+  // Begrenzung der Reichweite auf 40 cm
   if(iDistance<40)
-  {// draws the object according to the angle and the distance
-    //line(pixsDistance*cos(radians(iAngle)),-pixsDistance*sin(radians(iAngle)),(width-width*0.505)*cos(radians(iAngle)),-(width-width*0.505)*sin(radians(iAngle)));
-    //point(pixsDistance*cos(radians(iAngle)),-pixsDistance*sin(radians(iAngle)));
+  {
+    // zeichnet die Linie entsprechend dem Winkel und der Entfernung
     line(0,0,pixsDistance*cos(radians(iAngle)),-pixsDistance*sin(radians(iAngle)));
-    noise.play();
+    noise.play(); // Spielt Sound ab
   }
   else
   {
-    line(0,0,(height-height*0.12)*cos(radians(iAngle)),-(height-height*0.12)*sin(radians(iAngle))); // draws the line according to the angle
-    noise.stop();
+    /* zeichnet die Linie entsprechend dem Winkel und der Entfernung */
+    line(0,0,(height-height*0.12)*cos(radians(iAngle)),-(height-height*0.12)*sin(radians(iAngle))); 
+    noise.stop(); // Stop den Sound
   }
   popMatrix();
 }
@@ -112,30 +131,19 @@ void drawObject()
 void drawPoint()
 {
   pushMatrix();
-  translate(width/2,height-height*0.074); // moves the starting coordinats to new location
-  strokeWeight(10);
-  //stroke(255,255,255);
-  //stroke(255,10,10); // red color
-  stroke(30,250,60); // gree colur
-  pixsDistance = iDistance*((height-height*0.1666)*0.025); // covers the distance from the sensor from cm to pixels
+  translate(width/2,height-height*0.074); // verschiebt die Startkoordinaten an einen neuen Ort
+  strokeWeight(10); // Dicke
+  stroke(30,250,60); // Grüne Farbe
+  pixsDistance = iDistance*((height-height*0.1666)*0.025); // wandelt den Punkt vom Objekt von cm to pixel
   if(iDistance<40)
   {
     point(pixsDistance*cos(radians(iAngle)),-pixsDistance*sin(radians(iAngle)));
   }
   popMatrix();
 }
-void drawLine() 
-{
-  pushMatrix();
-  strokeWeight(9);
-  stroke(30,250,60);
-  translate(width/2,height-height*0.074); // moves the starting coordinats to new location
-  line(0,0,(height-height*0.12)*cos(radians(iAngle)),-(height-height*0.12)*sin(radians(iAngle))); // draws the line according to the angle
-  popMatrix();
-}
 
-void drawText() 
-{ // draws the texts on the screen
+void drawText()
+{
   pushMatrix();
   
   fill(0,0,0);
@@ -149,10 +157,10 @@ void drawText()
   text("30cm",width-width*0.177,height-height*0.0833);
   text("40cm",width-width*0.0729,height-height*0.0833);
   textSize(15);
-  text(" build 0.343 VA Lukas Ambros 2022 ", width-width*0.875, height-height*0.0277);
+  text(" VA Lukas Ambros 2022 ", width-width*0.875, height-height*0.0277);
   text("Angle: " + iAngle +" °", width-width*0.48, height-height*0.0277);
   text("Distance: ", width-width*0.26, height-height*0.0277);
-  if(iDistance<40) 
+  if(iDistance<40)
   {
     text("        " + iDistance +" cm", width-width*0.225, height-height*0.0277);
   }
