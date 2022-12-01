@@ -66,7 +66,7 @@ void serialEvent (Serial port)
   data = port.readStringUntil('.');
   data = data.substring(0,data.length()-1); // Löscht den "."
   
-  index1 = data.indexOf(","); // findet das Zeichen "," und setzt es in die Variable "index1" ein
+  index = data.indexOf(","); // findet das Zeichen "," und setzt es in die Variable "index1" ein
   angle = data.substring(0, index); // Den Winkel abspeichern
   distance = data.substring(index+1, data.length()); // Die Distanz absperichern
   
@@ -132,7 +132,7 @@ void drawPoint()
 {
   pushMatrix();
   translate(width/2,height-height*0.074); // verschiebt die Startkoordinaten an einen neuen Ort
-  strokeWeight(10); // Dicke
+  strokeWeight(12); // Dicke
   stroke(30,250,60); // Grüne Farbe
   pixsDistance = iDistance*((height-height*0.1666)*0.025); // wandelt den Punkt vom Objekt von cm to pixel
   if(iDistance<40)
