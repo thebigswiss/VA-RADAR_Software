@@ -158,8 +158,8 @@ void drawText()
   text("40cm",width-width*0.0729,height-height*0.0833);
   textSize(15);
   text(" VA Lukas Ambros 2022 ", width-width*0.875, height-height*0.0277);
-  text("Angle: " + iAngle +" °", width-width*0.48, height-height*0.0277);
-  text("Distance: ", width-width*0.26, height-height*0.0277);
+  text("Winkel: " + iAngle +" °", width-width*0.48, height-height*0.0277);
+  text("Distanz: ", width-width*0.26, height-height*0.0277);
   if(iDistance<40)
   {
     text("        " + iDistance +" cm", width-width*0.225, height-height*0.0277);
