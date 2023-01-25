@@ -36,7 +36,7 @@ PFont orcFont;
 /* Initialisierungs Funktion */
 void setup()
 {
- size (1536, 864); // Fenster Grösse in pixel
+ size (1236, 764); // Fenster Grösse in pixel
  smooth();
  port = new Serial(this,Serial.list()[0], 9600); // startet die serielle Kommunikation
  /* // liest die Daten von der seriellen Schnittstelle bis zu dem Zeichen ",". Also Winkel.Abstand  */
